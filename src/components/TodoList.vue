@@ -21,6 +21,18 @@ watch(() => counter.updated, (newValue, oldValue) => {
     console.log(`Counter updated ${oldValue} -> ${newValue}`);
 });
 
+const newtodo = ref("");
+const disablebutton = ref(true);
+
+watch(newtodo, (newTodoValue) => {
+    if(newTodoValue.length === 0){
+        disablebutton.value = true;
+    }
+    else{
+        disablebutton.value = false;
+    }
+});
+
 function handleTodoItemDeleted(todoItemId) {
     reactiveTodos.value = reactiveTodos.value.filter(item => item.id !== todoItemId);
     counter.deleted++;
@@ -40,6 +52,28 @@ function handleTodoItemCompleted(todoItemId, completed) {
     counter.updated++;
 }
 
+
+function handleAddTodo(){
+    const newID = reactiveTodos.value.length + 1;
+    console.log(newID);
+    const todo = {
+        id: newID,
+        title: newtodo.value,
+        completed: false
+    };
+   reactiveTodos.value.push(todo);
+
+fetch('https://jsonplaceholder.typicode.com/todos', {
+    method: 'POST',
+    body: JSON.stringify(todo),
+    headers: {
+    'Content-type': 'application/json; charset=UTF-8',
+  },
+   })
+  .then((response) => response.json())
+  .then((json) => console.log(json));
+}
+
 const checkbox = ref(true);
 
 watch(checkbox, newValue => {
@@ -52,6 +86,10 @@ watch(checkbox, newValue => {
     <input type="checkbox" v-model="checkbox" />
     <p>Updated: {{ counter.updated }}</p>
     <p>Deleted: {{ counter.deleted }}</p>
+
+    <input class="todo-form" type="text" placeholder="add text" v-model="newtodo"/>
+    <button class="button" @click="handleAddTodo" :disabled="disablebutton">Add todo item</button>
+
     <div class="todo-list">
         <TodoListItem
             v-for="todo of reactiveTodos"
@@ -70,4 +108,38 @@ watch(checkbox, newValue => {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
+.button{
+    background-color: orange;
+    color: white;
+    border-style: solid;
+    border-color: transparent;
+    border-radius: 6px;
+    border-width: 1px; 
+    margin-left: 8px;
+    margin-bottom: 8px;
+    padding: 8px;
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+.button:hover{
+    background-color: white;
+    color: black;
+    opacity: 70%;
+    cursor: pointer;
+    border: 1px solid red;
+}
+.todo-form{
+    padding: 8px;
+    background-color: white;
+    color: black;
+    font-family: sans-serif;
+    font-size: 12px;
+    border-radius: 6px;
+    border-width: 2px;
+    border-color: orange;
+    text-align: center;
+}
+
+
 </style>
